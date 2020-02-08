@@ -14,21 +14,20 @@ def sent2iob(sent, format="c", tag_list=None):
     label = []
     tag_set = set()
     for event, elem in parser.read_events():
-        if event == "start" and elem.tag != "sent":
-            tag_set.add(elem.tag)
+        if event == "start":
             assert len(tag_set) < 2, "タグが入れ子になっています\n{}".format(sent)
-            if tag_list is None or (tag_list is not None and elem.tag in tag_list):
-                word = elem.text if elem.text is not None else ""
-                res += word
-                label += [elem.tag] * len(word)
-
-        if event == "start" and elem.tag == "sent":
             word = elem.text if elem.text is not None else ""
             res += word
-            label += ["O"] * len(word)
+
+            isuse = tag_list is None or (tag_list is not None and elem.tag in tag_list)
+            if elem.tag != "sent" and isuse:
+                tag_set.add(elem.tag)
+                label += [elem.tag] * len(word)
+            else:
+                label += ["O"] * len(word)
 
         if event == "end":
-            if elem.tag != "sent":
+            if elem.tag != "sent" and isuse:
                 tag_set.remove(elem.tag)
             word = elem.tail if elem.tail is not None else ""
             res += word
@@ -82,7 +81,7 @@ if __name__ == "__main__":
 
     output = doc2iob(doc, format=args.format, tag_list=tag)
 
-    path = args.input.split(".")[0] + "_iob.iob" if args.output is None else args.output
+    path = ".".join(args.input.split(".")[:-1]) + "_iob.iob" if args.output is None else args.output
 
     with open(path, "w") as f:
         print("output : ", path)

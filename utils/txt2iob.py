@@ -65,8 +65,8 @@ def doc2iob(doc, format="c", tag_list=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Convert text to IOB2 format.')
-    parser.add_argument('--format', default="c", help='Unit : c (char) or w (word)')
-    parser.add_argument('--tag', default=None, help='target tag : C,M')
+    parser.add_argument('--format', default="c", help='character based or word based : c (char) or w (word)')
+    parser.add_argument('--tag', default=None, help='valid tag list : C,M')
     parser.add_argument('--input', default=None, help='input file path　(Mandatory)')
     parser.add_argument('--output', default=None, help='output file path')
 

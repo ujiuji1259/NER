@@ -54,14 +54,17 @@ def sent2iob(sent, format="c", tag_list=None):
 
         prev = label[cnt]
 
-        output.append(token + "\t" + pre_token + label[cnt])
+        output.append((token, pre_token + label[cnt]))
         cnt += len(token)
 
-    return "\n".join(output)
+    return output
 
 def doc2iob(doc, format="c", tag_list=None):
     output = [sent2iob(s.replace("\n", ""), format, tag_list) for s in doc]
-    return "\n\n".join(output)
+    return output
+
+def create_output_string(sent):
+    return '\n'.join([i[0] + '\t' + i[2] for i in sent])
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Convert text to IOB2 format.')
@@ -80,6 +83,7 @@ if __name__ == "__main__":
         doc = f.readlines()
 
     output = doc2iob(doc, format=args.format, tag_list=tag)
+    output = '\n\n'.join([create_output_string(sent) for sent in output])
 
     path = ".".join(args.input.split(".")[:-1]) + "_iob.iob" if args.output is None else args.output
 

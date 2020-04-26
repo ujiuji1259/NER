@@ -1,0 +1,5 @@
+data/clean_data_sent.txt
+data/clean_data_sent.iob
+data/train.iob
+data/valid.iob
+models

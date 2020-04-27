@@ -15,8 +15,8 @@ sys.path.append(str(base_dir))
 from utils import data_utils, iob2json
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-def predict(model, x, outputpath=None, device=None):
-    data = data_utils.Batch(input_x, input_x, batch_size=8)
+def predict(model, x, device=None):
+    data = data_utils.Batch(x, x, batch_size=8)
 
     model.to(device)
     model.eval()
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     model_path = args.model_dir + '/final.model'
     model.load_state_dict(torch.load(model_path))
 
-    tags = predict(model, input_x, args.output_path, device)
+    tags = predict(model, input_x, device)
     labels = [[id2label[t] for t in tag] for tag in tags]
     input_x = [tokenizer.convert_ids_to_tokens(t)[1:] for t in input_x]
 

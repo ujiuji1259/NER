@@ -17,7 +17,7 @@ from utils import data_utils
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 def train(model, x, y, max_epoch=10, lr=3e-5, batch_size=8, val=None, outputdir=None):
-    data = data_utils.Batch(input_x, input_y, batch_size=batch_size)
+    data = data_utils.Batch(x, y, batch_size=batch_size)
     if val is not None:
         val_data = data_utils.Batch(val[0], val[1], batch_size=batch_size)
         val_loss = []

@@ -1,4 +1,6 @@
 import torch
+import mojimoji
+
 def load_dataset(path):
     with open(path, 'r') as f:
         lines = f.read()
@@ -13,7 +15,7 @@ def load_dataset(path):
         sent_label = []
         for l in line:
             token, tag = l.split("\t")
-            sent.append(token)
+            sent.append(mojimoji.zen_to_han(token, kana=False))
             sent_label.append(tag)
 
         data.append(sent)
@@ -59,20 +61,24 @@ def pad_sequence(seq, max_length=512, pad_value=0, issort=True):
     return [pad_sentence(s, max_length, pad_value) for s in seq]
 
 class Batch(object):
-    def __init__(self, data, label, batch_size=8, pad_value=0, max_size=512, device=None):
+    def __init__(self, data, label, batch_size=8, pad_value=0, max_size=512, device=None, sort=True):
         self.data = data
         self.label = label
         self.batch_size = batch_size
         self.pad_value = pad_value
         self.max_size = max_size
         self.device = device
+        self.sort = sort
     
     def __len__(self):
         return len(self.data)
 
     def __iter__(self):
         data = zip(self.data, self.label)
-        data = sorted(data, key=lambda x: len(x[0]), reverse=True)
+        if self.sort:
+            data = sorted(data, key=lambda x: len(x[0]), reverse=True)
+        else:
+            data = list(data)
 
         for i in range(0, len(data), self.batch_size):
             s_pos = i
@@ -81,8 +87,8 @@ class Batch(object):
             x = [d[0] for d in data[s_pos:e_pos]]
             l = [d[1] for d in data[s_pos:e_pos]]
             length = [len(d[0]) for d in data[s_pos:e_pos]]
-            x = pad_sequence(x, self.max_size, pad_value=self.pad_value)
-            l = pad_sequence(l, self.max_size, pad_value=self.pad_value)
+            x = pad_sequence(x, self.max_size, pad_value=self.pad_value, issort=self.sort)
+            l = pad_sequence(l, self.max_size, pad_value=self.pad_value, issort=self.sort)
 
             yield x, l, length
 

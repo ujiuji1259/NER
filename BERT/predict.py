@@ -48,7 +48,6 @@ if __name__ == '__main__':
     with open(args.input_path, 'r') as f:
         train_data = [line for line in f.read().split('\n') if line != '']
     train_data = [tokenizer.tokenize(t) for t in train_data]
-    print(train_data)
 
     with open(args.model_dir + '/label_vocab.json', 'r') as f:
         label_vocab = json.load(f)

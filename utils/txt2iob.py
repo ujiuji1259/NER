@@ -3,7 +3,9 @@ import xml.etree.ElementTree as ET
 import MeCab
 import argparse
 
-def sent2iob(sent, format="c", tag_list=None):
+def sent2iob(sent, format="c", tag_list=None, unk_expand=False, bert=False):
+    if unk_expand or bert:
+        sent = sent.replace('　', '')
     text = '<sent>' + sent + '</sent>'
     parser = ET.XMLPullParser(['start', 'end'])
     parser.feed(text)
@@ -13,13 +15,15 @@ def sent2iob(sent, format="c", tag_list=None):
     res = ""
     label = []
     tag_set = set()
+    print(sent)
     for event, elem in parser.read_events():
+        isuse = tag_list is None or (tag_list is not None and elem.tag in tag_list)
         if event == "start":
             assert len(tag_set) < 2, "タグが入れ子になっています\n{}".format(sent)
             word = elem.text if elem.text is not None else ""
             res += word
 
-            isuse = tag_list is None or (tag_list is not None and elem.tag in tag_list)
+            #isuse = tag_list is None or (tag_list is not None and elem.tag in tag_list)
             if elem.tag != "sent" and isuse:
                 tag_set.add(elem.tag)
                 label += [elem.tag] * len(word)
@@ -35,16 +39,27 @@ def sent2iob(sent, format="c", tag_list=None):
 
     if format == "c":
         res = list(res)
+        nums = [len(r) for r in res]
     elif format == "w":
         mecab = MeCab.Tagger('-Owakati')
         res = mecab.parse(res)[:-1].split(' ')[:-1]
+        nums = [len(r) for r in res]
+    else:
+        if unk_expand:
+            res, nums = format(res)
+        else:
+            res = format(res)
+            nums = [1 for r in res]
 
     cnt = 0
     output = []
     prev = "O"
     post = ""
-    for token in res:
-        assert len(set(label[cnt:cnt+len(token)])) == 1, "形態素とラベルが食い違っています\n{2}\n{0} : {1}".format(token, label[cnt:cnt+len(token)], "".join(res))
+    for token, n in zip(res, nums):
+        if len(label) <= cnt:
+            output.append((token, "O"))
+            break
+        assert len(set(label[cnt:cnt+n])) == 1, "形態素とラベルが食い違っています\n{2}\n{0} : {1}".format(token, label[cnt:cnt+len(token)], res)
         pre_token = ""
 
         if label[cnt] != "O" and (prev == "O" or prev != label[cnt]):
@@ -55,12 +70,12 @@ def sent2iob(sent, format="c", tag_list=None):
         prev = label[cnt]
 
         output.append((token, pre_token + label[cnt]))
-        cnt += len(token)
+        cnt += n
 
     return output
 
-def doc2iob(doc, format="c", tag_list=None):
-    output = [sent2iob(s.replace("\n", ""), format, tag_list) for s in doc]
+def doc2iob(doc, format="c", tag_list=None, unk_expand=False, bert=False):
+    output = [sent2iob(s.replace("\n", ""), format, tag_list, unk_expand, bert) for s in doc]
     return output
 
 def create_output_string(sent):

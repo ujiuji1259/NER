@@ -31,6 +31,7 @@ def train(model, x, y, max_epoch=10, lr=3e-5, batch_size=8, val=None, outputdir=
     min_val_loss = 999999999999
     model.to(device)
     for epoch in tqdm(range(max_epoch)):
+        print('EPOCH :', epoch+1)
         model.train()
         all_loss = 0
         step = 0
@@ -53,6 +54,7 @@ def train(model, x, y, max_epoch=10, lr=3e-5, batch_size=8, val=None, outputdir=
             step += 1
 
         losses.append(all_loss / step)
+        print(losses)
 
         if val is not None:
             model.eval()

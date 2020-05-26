@@ -20,7 +20,7 @@ if __name__ == '__main__':
     with open(args.path, 'r') as f:
         lines = [line for line in f.read().split('\n') if line != '']
 
-    output = '\n\n'.join(['\n'.join(['\t'.join(t) for t in line]) for line in txt2iob.doc2iob(lines, format=tokenizer.tokenize, tag_list=tag)])
+    output = '\n\n'.join(['\n'.join(['\t'.join(t) for t in line]) for line in txt2iob.doc2iob(lines, format=tokenizer.tokenize, tag_list=tag, bert=True)])
     with open(args.output_path, 'w') as f:
         f.write(output)
 
